@@ -37,7 +37,7 @@ public class Level : Scene {
    protected TileSet _discovered; // tiles the player has seen
    protected TileSet _inFov;      // current fov of player
 
-    protected List<Item> _items;
+   protected List<Item> _items;
 
    public Level(Player p, string map, Game game) {
       if (game == null || p == null || map == null)
@@ -47,7 +47,7 @@ public class Level : Scene {
       _player.Pos = new Vector2(4, 12); // random, or at stairs
       _map        = map;
       _game       = _game;
-        _items = new List<Item>();
+      _items = new List<Item>();
       
       initMapTileSets(map);
       updateDiscovered();
@@ -125,7 +125,8 @@ public class Level : Scene {
 
    private void drawItems(IRenderWindow disp) 
     {
-        foreach (var item in _items) {
+        foreach (var item in _items) 
+        {
             item.Draw(disp);
         }
     }
