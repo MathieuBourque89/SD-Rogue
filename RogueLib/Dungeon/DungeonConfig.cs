@@ -52,7 +52,7 @@ public static class DungeonConfig {
              ###############
       """;
 
-  static string RIP =
+  public static string RIP =
       """
 
                     __________
@@ -69,4 +69,36 @@ public static class DungeonConfig {
               *|     *  *  *      | *
       ________)/\\_//(\/(/\)/\//\/|_)_______
       """;
+  public static string menu = 
+    """
+        Instructions:
+        
+        Move Up:    ↑
+        Move Down:  ↓          
+        Move Left:  →
+        Move Right: ←
+                 
+        Open Instructions: M
+        
+        Quit: Q          
+                
+                  
+               
+          
+          
+          
+          
+          
+          
+          
+            
+            
+                
+                 
+                 
+                 
+                 
+              
+                 
+    """;
 }

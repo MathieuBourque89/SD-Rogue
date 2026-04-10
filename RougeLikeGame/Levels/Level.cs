@@ -1,3 +1,4 @@
+using RogueLib;
 using RogueLib.Dungeon;
 using RogueLib.Engine;
 using RogueLib.Utilities;
@@ -25,6 +26,7 @@ public class Level : Scene {
    // ---- level config ---- 
    protected string? _map;
    protected int     _senseRadius = 4;
+   protected bool menuActive = false;
 
    // --- Tile Sets -----
    // used to keep track of state of tiles on the map
@@ -91,14 +93,20 @@ public class Level : Scene {
       var tilesToDraw = new TileSet(_decor);
       tilesToDraw.IntersectWith(_discovered);
       tilesToDraw.UnionWith(_inFov);
-
+      
       disp.fDraw(tilesToDraw, _map, ConsoleColor.Gray);
-
+      
       var rng = new Random();
       if (_player.Turn % 5 == 0)
          _player._color = (ConsoleColor)rng.Next(10, 16);
       _player!.Draw(disp);
       // disp.Draw(_player!.Glyph, _player!.Pos, ConsoleColor.Cyan);
+      
+      if (menuActive == true)
+      {
+         disp.Draw(DungeonConfig.menu, new Vector2(0, 0), ConsoleColor.Red);
+         return;
+      }
 
       drawItems(disp);
       drawEnemies(disp);
@@ -115,6 +123,8 @@ public class Level : Scene {
          MovePlayer(Vector2.W);
       } else if (command.Name == "right") {
          MovePlayer(Vector2.E);
+      } else if (command.Name == "menu") {
+         menuActive = !menuActive;
       } // game ctl      
       else if (command.Name == "quit") {
          _levelActive = false;
@@ -193,6 +203,8 @@ public class Level : Scene {
       RegisterCommand(ConsoleKey.RightArrow, "right");
       RegisterCommand(ConsoleKey.D, "right");
       RegisterCommand(ConsoleKey.L, "right");
+      
+      RegisterCommand(ConsoleKey.M, "menu");
 
       RegisterCommand(ConsoleKey.Q, "quit");
    }

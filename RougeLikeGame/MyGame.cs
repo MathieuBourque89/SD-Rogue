@@ -18,7 +18,7 @@ public class MyGame : Game {
       _window       = new ScreenBuff();
       _player       = new Rogue();
       _currentLevel = new Level(_player, map1, this);
-      
+
    }
 
    public MyGame() {
