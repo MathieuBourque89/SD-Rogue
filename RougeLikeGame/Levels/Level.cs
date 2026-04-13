@@ -24,7 +24,7 @@ public class Level : Scene
 {
     // ---- level config ---- 
     protected string? _map;
-    protected int _senseRadius = 4;
+    protected int _senseRadius = 400;
 
     // --- Tile Sets -----
     // used to keep track of state of tiles on the map
@@ -85,6 +85,11 @@ public class Level : Scene
     public override void Update()
     {
         _player!.Update();
+        foreach (var enemy in _enemies)
+        {
+            enemy.Update(_walkables);
+        }
+
         // foreach item update
         // foreach NPC update 
         // check for player death -- on death build RIP message
@@ -141,14 +146,10 @@ public class Level : Scene
 
     private void drawEnemies(IRenderWindow disp)
     {
-        foreach(var pos in _discovered)
+        foreach (var enemy in _enemies)
         {
-            foreach(var enemy in _enemies)
             {
-                if (enemy.Pos == pos)
-                {
-                    enemy.Draw(disp);
-                }
+                enemy.Draw(disp);
             }
         }
     }
