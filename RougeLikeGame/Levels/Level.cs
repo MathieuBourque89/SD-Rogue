@@ -20,175 +20,223 @@ namespace RlGameNS;
 // GameScreen what tiles to draw. TileSets can be combined with Union and 
 // Intersect to create complex tile sets.
 // -----------------------------------------------------------------------
-public class Level : Scene {
-   // ---- level config ---- 
-   protected string? _map;
-   protected int     _senseRadius = 4;
+public class Level : Scene
+{
+    // ---- level config ---- 
+    protected string? _map;
+    protected int _senseRadius = 4;
 
-   // --- Tile Sets -----
-   // used to keep track of state of tiles on the map
-   protected TileSet _walkables; // walkable tiles 
-   protected TileSet _floor;
-   protected TileSet _tunnel;
-   protected TileSet _door;
-   protected TileSet _decor; // walls and other decorations, always visible once discovered
+    // --- Tile Sets -----
+    // used to keep track of state of tiles on the map
+    protected TileSet _walkables; // walkable tiles 
+    protected TileSet _floor;
+    protected TileSet _tunnel;
+    protected TileSet _door;
+    protected TileSet _decor; // walls and other decorations, always visible once discovered
 
-   protected TileSet _discovered; // tiles the player has seen
-   protected TileSet _inFov;      // current fov of player
+    protected TileSet _discovered; // tiles the player has seen
+    protected TileSet _inFov;      // current fov of player
+    List<Enemy> _enemies;
 
-   public Level(Player p, string map, Game game) {
-      if (game == null || p == null || map == null)
-         throw new ArgumentNullException("game, player, or map cannot be null");
+    public Level(Player p, string map, Game game)
+    {
+        if (game == null || p == null || map == null)
+            throw new ArgumentNullException("game, player, or map cannot be null");
 
-      _player     = p;
-      _player.Pos = new Vector2(4, 12); // random, or at stairs
-      _map        = map;
-      _game       = _game;
+        _player = p;
+        _player.Pos = new Vector2(4, 12); // random, or at stairs
+        _map = map;
+        _game = game;
+        _enemies = new List<Enemy>();
 
-      initMapTileSets(map);
-      updateDiscovered();
-      registerCommandsWithScene();
-   }
+        initMapTileSets(map);
+        updateDiscovered();
+        registerCommandsWithScene();
+        createEnemies();
+    }
 
-   protected void updateDiscovered() {
-      _inFov = fovCalc(_player!.Pos, _senseRadius);
+    private void createEnemies()
+    {
+        Random random = new Random();
+        List<ConsoleColor> colors = new List<ConsoleColor> { ConsoleColor.DarkRed, ConsoleColor.DarkCyan, ConsoleColor.DarkMagenta, ConsoleColor.DarkYellow };
+        for (var i = 0; i < 10; i++)
+        {
+            Vector2 pos = _walkables.ElementAt(random.Next(_walkables.Count));
+            Enemy enemy = new($"Enemy 00{i}", pos, '&', colors[random.Next(colors.Count)]);
+            _enemies.Add(enemy);
+        }
 
-      if (_discovered is null)
-         _discovered = new TileSet();
+    }
 
-      _discovered.UnionWith(_inFov);
-   }
+    protected void updateDiscovered()
+    {
+        _inFov = fovCalc(_player!.Pos, _senseRadius);
 
-   protected TileSet fovCalc(Vector2 pos, int sens)
-      => Vector2.getAllTiles().Where(t => (pos - t).RookLength < sens).ToHashSet();
+        if (_discovered is null)
+            _discovered = new TileSet();
 
-   // -----------------------------------------------------------------------
-   public override void Update() {
-      _player!.Update();
-      // foreach item update
-      // foreach NPC update 
-      // check for player death -- on death build RIP message
-   }
+        _discovered.UnionWith(_inFov);
+    }
 
-   public override void Draw(IRenderWindow? disp) {
-      // using custom RenderWindow, cast to my RenderWindow
-      var tilesToDraw = new TileSet(_decor);
-      tilesToDraw.IntersectWith(_discovered);
-      tilesToDraw.UnionWith(_inFov);
+    protected TileSet fovCalc(Vector2 pos, int sens)
+       => Vector2.getAllTiles().Where(t => (pos - t).RookLength < sens).ToHashSet();
 
-      disp.fDraw(tilesToDraw, _map, ConsoleColor.Gray);
+    // -----------------------------------------------------------------------
+    public override void Update()
+    {
+        _player!.Update();
+        // foreach item update
+        // foreach NPC update 
+        // check for player death -- on death build RIP message
+    }
 
-      var rng = new Random();
-      if (_player.Turn % 5 == 0)
-         _player._color = (ConsoleColor)rng.Next(10, 16);
-      _player!.Draw(disp);
-      // disp.Draw(_player!.Glyph, _player!.Pos, ConsoleColor.Cyan);
+    public override void Draw(IRenderWindow? disp)
+    {
+        // using custom RenderWindow, cast to my RenderWindow
+        var tilesToDraw = new TileSet(_decor);
+        tilesToDraw.IntersectWith(_discovered);
+        tilesToDraw.UnionWith(_inFov);
 
-      drawItems(disp);
-      drawEnemies(disp);
-      disp.Draw(_player.HUD, new Vector2(0, 24), ConsoleColor.Green);
-   }
+        disp.fDraw(tilesToDraw, _map, ConsoleColor.Gray);
 
-   public override void DoCommand(Command command) {
-      // player ctl  
-      if (command.Name == "up") {
-         MovePlayer(Vector2.N);
-      } else if (command.Name == "down") {
-         MovePlayer(Vector2.S);
-      } else if (command.Name == "left") {
-         MovePlayer(Vector2.W);
-      } else if (command.Name == "right") {
-         MovePlayer(Vector2.E);
-      } // game ctl      
-      else if (command.Name == "quit") {
-         _levelActive = false;
-      }
-   }
+        var rng = new Random();
+        if (_player.Turn % 5 == 0)
+            _player._color = (ConsoleColor)rng.Next(10, 16);
+        _player!.Draw(disp);
+        // disp.Draw(_player!.Glyph, _player!.Pos, ConsoleColor.Cyan);
 
-// -------------------------------------------------------------------------
+        drawItems(disp);
+        drawEnemies(disp);
+        disp.Draw(_player.HUD, new Vector2(0, 24), ConsoleColor.Green);
+    }
 
-   private void drawItems(IRenderWindow disp) { }
+    public override void DoCommand(Command command)
+    {
+        // player ctl  
+        if (command.Name == "up")
+        {
+            MovePlayer(Vector2.N);
+        }
+        else if (command.Name == "down")
+        {
+            MovePlayer(Vector2.S);
+        }
+        else if (command.Name == "left")
+        {
+            MovePlayer(Vector2.W);
+        }
+        else if (command.Name == "right")
+        {
+            MovePlayer(Vector2.E);
+        } // game ctl      
+        else if (command.Name == "quit")
+        {
+            _levelActive = false;
+        }
+    }
 
-   private void drawEnemies(IRenderWindow disp) { }
+    // -------------------------------------------------------------------------
 
-   private void initMapTileSets(string map) {
-      var lines = map.Split('\n');
+    private void drawItems(IRenderWindow disp) { }
 
-      // ------ rules for map ------
-      // . - floor, walkable and transparent.
-      // + - door, walkable and transparent // # - tunnel, walkable and transparent
-      // ' ' - solid stone, not walkable, not transparent.
-      // '|' - wall, not walkable, not transparent, but discoverable.'
-      //  others are treated the same as wall.
-      // tunnel, wall, and doorways are decor, once discovered they are visible.
+    private void drawEnemies(IRenderWindow disp)
+    {
+        foreach(var pos in _discovered)
+        {
+            foreach(var enemy in _enemies)
+            {
+                if (enemy.Pos == pos)
+                {
+                    enemy.Draw(disp);
+                }
+            }
+        }
+    }
 
-      _floor  = new TileSet();
-      _tunnel = new TileSet();
-      _door   = new TileSet();
-      _decor  = new TileSet();
+    private void initMapTileSets(string map)
+    {
+        var lines = map.Split('\n');
 
-      foreach (var (c, p) in Vector2.Parse(map)) {
-         if (c == '.') _floor.Add(p);
-         else if (c == '+') _door.Add(p);
-         else if (c == '#') _tunnel.Add(p);
-         else if (c != ' ') _decor.Add(p);
-      }
+        // ------ rules for map ------
+        // . - floor, walkable and transparent.
+        // + - door, walkable and transparent // # - tunnel, walkable and transparent
+        // ' ' - solid stone, not walkable, not transparent.
+        // '|' - wall, not walkable, not transparent, but discoverable.'
+        //  others are treated the same as wall.
+        // tunnel, wall, and doorways are decor, once discovered they are visible.
 
-      _walkables = _floor.Union(_tunnel).Union(_door).ToHashSet();
+        _floor = new TileSet();
+        _tunnel = new TileSet();
+        _door = new TileSet();
+        _decor = new TileSet();
 
-//      for (int row = 0; row < lines.Length; ++row) {
-//         for (int col = 0; col < lines[row].Length; ++col) {
-//            char tile = lines[row][col];
-//
-//            if (tile == '.' || tile == '+' || tile == '#') {
-//               _walkables.Add(new Vector2(col, row));
-//               _decor.Add(new Vector2(col, row));
-//            } else if (tile != ' ') {
-//               _decor.Add(new Vector2(col, row));
-//            }
-//         }
-//      }
-   }
+        foreach (var (c, p) in Vector2.Parse(map))
+        {
+            if (c == '.') _floor.Add(p);
+            else if (c == '+') _door.Add(p);
+            else if (c == '#') _tunnel.Add(p);
+            else if (c != ' ') _decor.Add(p);
+        }
 
-// ------------------------------------------------------
-// Commands 
-// ------------------------------------------------------
+        _walkables = _floor.Union(_tunnel).Union(_door).ToHashSet();
 
+        //      for (int row = 0; row < lines.Length; ++row) {
+        //         for (int col = 0; col < lines[row].Length; ++col) {
+        //            char tile = lines[row][col];
+        //
+        //            if (tile == '.' || tile == '+' || tile == '#') {
+        //               _walkables.Add(new Vector2(col, row));
+        //               _decor.Add(new Vector2(col, row));
+        //            } else if (tile != ' ') {
+        //               _decor.Add(new Vector2(col, row));
+        //            }
+        //         }
+        //      }
+    }
 
-   private void registerCommandsWithScene() {
-      RegisterCommand(ConsoleKey.UpArrow, "up");
-      RegisterCommand(ConsoleKey.W, "up");
-      RegisterCommand(ConsoleKey.K, "up");
-
-      RegisterCommand(ConsoleKey.DownArrow, "down");
-      RegisterCommand(ConsoleKey.S, "down");
-      RegisterCommand(ConsoleKey.J, "down");
-
-      RegisterCommand(ConsoleKey.DownArrow, "left");
-      RegisterCommand(ConsoleKey.A, "left");
-      RegisterCommand(ConsoleKey.H, "left");
-
-      RegisterCommand(ConsoleKey.DownArrow, "right");
-      RegisterCommand(ConsoleKey.D, "right");
-      RegisterCommand(ConsoleKey.L, "right");
-
-      RegisterCommand(ConsoleKey.Q, "quit");
-   }
+    // ------------------------------------------------------
+    // Commands 
+    // ------------------------------------------------------
 
 
-   public void MovePlayer(Vector2 delta) {
-      var newPos = _player!.Pos + delta;
+    private void registerCommandsWithScene()
+    {
+        RegisterCommand(ConsoleKey.UpArrow, "up");
+        RegisterCommand(ConsoleKey.W, "up");
+        RegisterCommand(ConsoleKey.K, "up");
 
-      if (_walkables.Contains(newPos)) {
-         var oldPos = _player!.Pos;
-         _player!.Pos = newPos;
-         _walkables.Remove(newPos); // new tile is now occupied
-         _walkables.Add(oldPos);    // old tile is now free
-         updateDiscovered();
-      }
-   }
+        RegisterCommand(ConsoleKey.DownArrow, "down");
+        RegisterCommand(ConsoleKey.S, "down");
+        RegisterCommand(ConsoleKey.J, "down");
 
-   public void QuitLevel() {
-      _levelActive = false;
-   }
+        RegisterCommand(ConsoleKey.LeftArrow, "left");
+        RegisterCommand(ConsoleKey.A, "left");
+        RegisterCommand(ConsoleKey.H, "left");
+
+        RegisterCommand(ConsoleKey.RightArrow, "right");
+        RegisterCommand(ConsoleKey.D, "right");
+        RegisterCommand(ConsoleKey.L, "right");
+
+        RegisterCommand(ConsoleKey.Q, "quit");
+    }
+
+
+    public void MovePlayer(Vector2 delta)
+    {
+        var newPos = _player!.Pos + delta;
+
+        if (_walkables.Contains(newPos))
+        {
+            var oldPos = _player!.Pos;
+            _player!.Pos = newPos;
+            _walkables.Remove(newPos); // new tile is now occupied
+            _walkables.Add(oldPos);    // old tile is now free
+            updateDiscovered();
+        }
+    }
+
+    public void QuitLevel()
+    {
+        _levelActive = false;
+    }
 }
