@@ -40,6 +40,7 @@ public class Level : Scene {
    protected TileSet _inFov;      // current fov of player
 
    protected List<Item> _items;
+   protected List<SpecialTiles> _specialTiles;
 
    public Level(Player p, string map, Game game) {
       if (game == null || p == null || map == null)
@@ -50,11 +51,13 @@ public class Level : Scene {
       _map        = map;
       _game       = _game;
       _items = new List<Item>();
+      _specialTiles = new List<SpecialTiles>();
       
       initMapTileSets(map);
       updateDiscovered();
       registerCommandsWithScene();
       spreadTheGold();
+      buildTraps();
    }
 
     private void spreadTheGold()
@@ -66,6 +69,17 @@ public class Level : Scene {
             var pos = _floor.ElementAt(rng.Next(_floor.Count));
             _items.Add(new Gold(pos, rng.Next(100,200)));
         }
+    }
+
+    private void buildTraps()
+    {
+       var rng = new Random();
+       var trapCount = rng.Next(3, 8);
+       for (int i = 0; i < trapCount; i++)
+       {
+          var pos = _floor.ElementAt(rng.Next(_floor.Count));
+          _specialTiles.Add(new Trap(pos, rng.Next(100, 200)));
+       }
     }
 
    protected void updateDiscovered() {
@@ -101,15 +115,10 @@ public class Level : Scene {
          _player._color = (ConsoleColor)rng.Next(10, 16);
       _player!.Draw(disp);
       // disp.Draw(_player!.Glyph, _player!.Pos, ConsoleColor.Cyan);
-      
-      if (menuActive == true)
-      {
-         disp.Draw(DungeonConfig.menu, new Vector2(0, 0), ConsoleColor.Red);
-         return;
-      }
 
       drawItems(disp);
       drawEnemies(disp);
+      drawSpecialTiles(disp);
       disp.Draw(_player.HUD, new Vector2(0, 24), ConsoleColor.Green);
    }
 
@@ -123,8 +132,6 @@ public class Level : Scene {
          MovePlayer(Vector2.W);
       } else if (command.Name == "right") {
          MovePlayer(Vector2.E);
-      } else if (command.Name == "menu") {
-         menuActive = !menuActive;
       } // game ctl      
       else if (command.Name == "quit") {
          _levelActive = false;
@@ -142,6 +149,14 @@ public class Level : Scene {
     }
 
    private void drawEnemies(IRenderWindow disp) { }
+
+   private void drawSpecialTiles(IRenderWindow disp)
+   {
+      foreach (var tile in _specialTiles)
+      {
+         tile.Draw(disp);
+      }
+   }
 
    private void initMapTileSets(string map) {
       var lines = map.Split('\n');
@@ -203,8 +218,6 @@ public class Level : Scene {
       RegisterCommand(ConsoleKey.RightArrow, "right");
       RegisterCommand(ConsoleKey.D, "right");
       RegisterCommand(ConsoleKey.L, "right");
-      
-      RegisterCommand(ConsoleKey.M, "menu");
 
       RegisterCommand(ConsoleKey.Q, "quit");
    }
