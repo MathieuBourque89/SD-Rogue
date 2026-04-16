@@ -71,34 +71,17 @@ public static class DungeonConfig {
       """;
   public static string menu = 
     """
-        Instructions:
-        
-        Move Up:    ↑
-        Move Down:  ↓          
-        Move Left:  →
-        Move Right: ←
-                 
-        Open Instructions: M
-        
-        Quit: Q          
-                
-                  
-               
-          
-          
-          
-          
-          
-          
-          
-            
-            
-                
-                 
-                 
-                 
-                 
-              
-                 
+        -----------------------------
+        |   Instructions:           |
+        |                           |
+        |   Move Up:    ↑           |
+        |   Move Down:  ↓           |
+        |   Move Left:  →           |
+        |   Move Right: ←           |
+        |                           |
+        |   Open Instructions: M    |   
+        |                           |
+        |    Quit: Q                |
+        -----------------------------
     """;
 }

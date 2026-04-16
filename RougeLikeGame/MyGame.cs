@@ -18,6 +18,7 @@ public class MyGame : Game {
       _window       = new ScreenBuff();
       _player       = new Rogue();
       _currentLevel = new Level(_player, map1, this);
+      _menu         = new Level(_player, menu, this);
 
    }
 
@@ -58,5 +59,21 @@ public class MyGame : Game {
              ###############
              
              
+      """;
+   
+   public static string menu = 
+      """
+          -----------------------------
+          |   Instructions:           |
+          |                           |
+          |   Move Up:    ↑           |
+          |   Move Down:  ↓           |
+          |   Move Left:  →           |
+          |   Move Right: ←           |
+          |                           |
+          |   Open Instructions: M    |   
+          |                           |
+          |    Quit: Q                |
+          -----------------------------
       """;
 }

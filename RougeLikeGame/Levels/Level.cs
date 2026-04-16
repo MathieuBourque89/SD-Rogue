@@ -105,7 +105,6 @@ public class Level : Scene {
       if (menuActive == true)
       {
          disp.Draw(DungeonConfig.menu, new Vector2(0, 0), ConsoleColor.Red);
-         return;
       }
 
       drawItems(disp);
@@ -124,7 +123,7 @@ public class Level : Scene {
       } else if (command.Name == "right") {
          MovePlayer(Vector2.E);
       } else if (command.Name == "menu") {
-         menuActive = !menuActive;
+         
       } // game ctl      
       else if (command.Name == "quit") {
          _levelActive = false;

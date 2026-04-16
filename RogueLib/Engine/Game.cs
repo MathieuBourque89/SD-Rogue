@@ -17,6 +17,7 @@ public class Game {
    public const int width  = 78;
    public const int height = 25;
 
+   protected Scene?         _menu;
    protected Scene?         _currentLevel;
    protected bool           _isQuit;
    protected IRenderWindow? _window;
