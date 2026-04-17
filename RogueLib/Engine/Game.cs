@@ -43,9 +43,9 @@ public class Game {
          // -----------------
          HandleUserInput();
 
-         // -----------------
-         // update the level
-         // ----------------- 
+            // -----------------
+            // update the level
+            // ----------------- 
          _currentLevel!.Update();
       }
    }
