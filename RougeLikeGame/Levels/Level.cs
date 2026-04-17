@@ -25,7 +25,7 @@ public class Level : Scene
 {
     // ---- level config ---- 
     protected string? _map;
-    protected int _senseRadius = 400;
+    protected int _senseRadius = 4;
 
     // --- Tile Sets -----
     // used to keep track of state of tiles on the map
@@ -166,27 +166,23 @@ public class Level : Scene
    private void drawItems(IRenderWindow disp) 
     {
         foreach (var item in _items) 
-        {
-            item.Draw(disp);
-        }
+           if (_inFov.Contains(item.Pos))
+              item.Draw(disp);
+           
     }
 
     private void drawEnemies(IRenderWindow disp)
     {
         foreach (var enemy in _enemies)
-        {
-            {
-                enemy.Draw(disp);
-            }
-        }
+           if (_inFov.Contains(enemy.Pos))
+              enemy.Draw(disp);
     }
     
    private void drawSpecialTiles(IRenderWindow disp)
    {
       foreach (var tile in _specialTiles)
-      {
-         tile.Draw(disp);
-      }
+         if (_inFov.Contains(tile.Pos))
+            tile.Draw(disp);
    }
 
    private void initMapTileSets(string map) {
@@ -257,7 +253,7 @@ public class Level : Scene
 
    public void MovePlayer(Vector2 delta) {
       var newPos = _player!.Pos + delta;
-
+      
         if (_walkables.Contains(newPos))
         {
             var oldPos = _player!.Pos;
