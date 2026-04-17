@@ -11,7 +11,8 @@ namespace RogueLib.Utilities
         public string Name { get; init; }
         public ConsoleColor _color;
         public Vector2 Pos { get; set; }
-        public char Glyph;
+
+        public char Glyph { get; init; }
         private Vector2 _dir;
 
         public Enemy(string name, Vector2 pos, char glyph, ConsoleColor color)
@@ -60,7 +61,7 @@ namespace RogueLib.Utilities
             else if (_walkables.Contains(movEast))
             {
                _dir = Vector2.E;
-               Pos = movEast;
+                Pos = movEast;
             }
         }
     }

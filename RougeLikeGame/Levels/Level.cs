@@ -24,7 +24,7 @@ public class Level : Scene
 {
     // ---- level config ---- 
     protected string? _map;
-    protected int _senseRadius = 400;
+    protected int _senseRadius = 4;
 
     // --- Tile Sets -----
     // used to keep track of state of tiles on the map
@@ -148,6 +148,7 @@ public class Level : Scene
     {
         foreach (var enemy in _enemies)
         {
+            if (_discovered.Contains(enemy.Pos))
             {
                 enemy.Draw(disp);
             }
