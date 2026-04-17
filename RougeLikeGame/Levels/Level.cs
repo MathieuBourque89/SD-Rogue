@@ -1,6 +1,7 @@
 using RogueLib.Dungeon;
 using RogueLib.Engine;
 using RogueLib.Utilities;
+using System.Linq;
 using SandBox01.Levels;
 using TileSet = System.Collections.Generic.HashSet<RogueLib.Utilities.Vector2>;
 
@@ -38,6 +39,12 @@ public class Level : Scene {
    protected TileSet _inFov;      // current fov of player
 
    protected List<Item> _items;
+   // All Gold Positions that are generationed are stored in an array(which is below)
+   protected List<Vector2> _goldPositions = new();
+   protected List<Vector2> _itemsPositions = new();
+   protected List<Vector2> _exitPositions = new();
+
+   //public Vector2[] GoldPositions => _goldPositions.ToArray();
 
    public Level(Player p, string map, Game game) {
       if (game == null || p == null || map == null)
@@ -53,6 +60,8 @@ public class Level : Scene {
       updateDiscovered();
       registerCommandsWithScene();
       spreadTheGold();
+      spreadTheItems();
+      placeTheExit();
    }
 
     private void spreadTheGold()
@@ -63,10 +72,29 @@ public class Level : Scene {
         {
             var pos = _floor.ElementAt(rng.Next(_floor.Count));
             _items.Add(new Gold(pos, rng.Next(100,200)));
+            _goldPositions.Add(pos);
         }
     }
+    private void spreadTheItems()
+    {
+        var rng = new Random();
+        var howMuch = rng.Next(1, 4);
+        for (int i = 0; i < howMuch; i++)
+        {
+            var pos = _floor.ElementAt(rng.Next(_floor.Count));
+            _items.Add(new Items(pos, rng.Next(100, 200)));
+            _itemsPositions.Add(pos);
+        }
+    }
+    private void placeTheExit()
+    {
+        var rng = new Random();
+        var pos = _floor.ElementAt(rng.Next(_floor.Count));
+        _items.Add(new Exit(pos, rng.Next(100, 200)));
+        _exitPositions.Add(pos);
+    }
 
-   protected void updateDiscovered() {
+    protected void updateDiscovered() {
       _inFov = fovCalc(_player!.Pos, _senseRadius);
 
       if (_discovered is null)
@@ -123,11 +151,21 @@ public class Level : Scene {
 
 // -------------------------------------------------------------------------
 
-   private void drawItems(IRenderWindow disp) 
+   private void drawItems(IRenderWindow disp)
     {
-        foreach (var item in _items) 
+        if (_discovered is null)
         {
-            item.Draw(disp);
+            // nothing is discovered yet, don't draw items
+            return;
+        }
+
+        foreach (var item in _items)
+        {
+            // Only draw items on tiles the player has discovered or currently sees.
+            if (_discovered.Contains(item.Pos) || (_inFov != null && _inFov.Contains(item.Pos)))
+            {
+                item.Draw(disp);
+            }
         }
     }
 
@@ -207,8 +245,44 @@ public class Level : Scene {
          _walkables.Remove(newPos); // new tile is now occupied
          _walkables.Add(oldPos);    // old tile is now free
          updateDiscovered();
-      }
-   }
+         _player.IncrementTurn();
+
+         var matchedPositions = _goldPositions.Where(p => p.Equals(_player.Pos)).ToList();
+         if (matchedPositions.Any())
+         {
+             foreach (var pos in matchedPositions)
+             {
+                 _goldPositions.Remove(pos);
+
+                 var goldItems = _items.OfType<Gold>().Where(g => g.Pos.Equals(pos)).ToList();
+                    foreach (var g in goldItems)
+                    {
+                        _items.Remove(g);
+                        _player.AddGold(g.amount);
+                    }
+             }
+         }
+         matchedPositions = _itemsPositions.Where(p => p.Equals(_player.Pos)).ToList();
+         if (matchedPositions.Any())
+         {
+             foreach (var pos in matchedPositions)
+             {
+                 _itemsPositions.Remove(pos);
+                 var items = _items.OfType<Items>().Where(g => g.Pos.Equals(pos)).ToList();
+                    foreach (var i in items)
+                    {
+                        _items.Remove(i);
+                        _player.AddItems(i.amount);
+                    }
+             }
+            }
+        matchedPositions = _exitPositions.Where(p => p.Equals(_player.Pos)).ToList();
+            if (matchedPositions.Any())
+            {
+                QuitLevel();
+            }
+        }
+    }
 
    public void QuitLevel() {
       _levelActive = false;
