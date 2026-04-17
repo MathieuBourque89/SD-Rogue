@@ -29,10 +29,16 @@ public abstract class Player : IActor, IDrawable {
       $"  Str: {_str}({_maxStr})" +
       $"  Arm: {_arm}   Exp: {_exp}/{10} Turn: {_turn}";
 
+   public virtual void Update() { }
+   public void IncrementTurn() { _turn++; }
 
-   public virtual void Update() {
-      _turn++;
+   public void AddGold(int amount) {
+      _gold += amount;
    }
+   public void AddItems(int amount)
+    {
+        //Nothing Currently
+    }
 
    public virtual void Draw(IRenderWindow disp) {
       disp.Draw(Glyph, Pos, _color);
